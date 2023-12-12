@@ -25,6 +25,7 @@ namespace Application.UnitTests
                 return fixture;
             }
         }
+
         private const int DecimalPlaces = 4;
         private const int MainCurrencyVolume = 100;
         private const string
@@ -36,6 +37,8 @@ namespace Application.UnitTests
             SwissFrancISO = "CHF",
             JapaneseYenISO = "JPY",
             DanishKroneISO = "DKK";
+
+        // TODO: Pass the rates to the converter instead of duplicating the data between test and implementation
         private static Dictionary<string, decimal> _rates100UnitsMainToDKK = new Dictionary<string, decimal>()
         {
             { EuroISO, 743.94m },
@@ -45,8 +48,7 @@ namespace Application.UnitTests
             { NorwegianKroneISO, 78.40m },
             { SwissFrancISO,683.58m },
             { JapaneseYenISO, 5.9740m },
-            { DanishKroneISO, MainCurrencyVolume },
-
+            { DanishKroneISO, MainCurrencyVolume }
         };
 
         public DanishKroneBaseCurrencyConverterTests()
@@ -130,9 +132,9 @@ namespace Application.UnitTests
             exchangedAmount.ShouldBe(expectedExchangeAmount, DecimalPlaces);
         }
 
-        private static IEnumerable<object[]> GetCurrencyConversionTestData()
+        private static IEnumerable<object[]> CombineAllNonDkkCurrencies()
         {
-            var currencies = new List<string>
+            var nonDkkCurrencies = new List<string>
             {
                 EuroISO,
                 UsDollarISO,
@@ -143,9 +145,9 @@ namespace Application.UnitTests
                 JapaneseYenISO
             };
 
-            foreach (var mainCurrency in currencies)
+            foreach (var mainCurrency in nonDkkCurrencies)
             {
-                foreach (var moneyCurrency in currencies)
+                foreach (var moneyCurrency in nonDkkCurrencies)
                 {
                     if (mainCurrency != moneyCurrency)
                     {
@@ -163,7 +165,7 @@ namespace Application.UnitTests
         }
 
         [Theory]
-        [MemberData(nameof(GetCurrencyConversionTestData))]
+        [MemberData(nameof(CombineAllNonDkkCurrencies))]
         public void Convert_WhenBothCurrenciesConfiguredToDKK_ConvertsCorrectlyBetweenEachOther(
             string mainCurrency,
             string moneyCurrency,
@@ -180,16 +182,37 @@ namespace Application.UnitTests
             exchangedAmount.ShouldBe(expectedExchangedAmount);
         }
 
-        [Fact]
-        public void Convert_WhenMainAndMoneyCurrencyAreSame_ReturnsInputAmount()
-        {
+        [Theory]
+        [InlineAutoData($"{EuroISO}/{EuroISO}")]
+        [InlineAutoData($"{DanishKroneISO}/{DanishKroneISO}")]
+        [InlineAutoData($"{SwedishKronaISO}/{SwedishKronaISO}")]
+        [InlineAutoData($"{SwissFrancISO}/{SwissFrancISO}")]
+        [InlineAutoData($"{NorwegianKroneISO}/{NorwegianKroneISO}")]
+        [InlineAutoData($"{JapaneseYenISO}/{JapaneseYenISO}")]
+        [InlineAutoData($"{UsDollarISO}/{UsDollarISO}")]
+        [InlineAutoData($"{BritishPoundISO}/{BritishPoundISO}")]
 
+        public void Convert_WhenMainAndMoneyCurrencyAreSame_ReturnsInputAmount(string currencyPair, decimal originalAmount)
+        {
+            // Act
+            var exchangedValue = _theConverter.Convert(currencyPair, originalAmount);
+
+            // Assert
+            exchangedValue.ShouldBe(originalAmount);
         }
 
 
-        [Fact]
-        public void Convert_WhenInvalidCurrencyPair_ThrowsInformativeException()
+        [Theory]
+        [InlineAutoData("ABC/DEF")]
+        [InlineAutoData("GHI/JKL")]
+        [InlineAutoData("MNO/PQR")]
+        [InlineAutoData("STU/VWXY")]
+        public void Convert_WhenInvalidCurrencyPair_ThrowsInformativeException(string currencyPair, decimal amount)
         {
+            // Act and assert
+            Should
+                .Throw<ArgumentException>(() => _theConverter.Convert(currencyPair, amount))
+                .Message.ShouldStartWith(ErrorMessages.ExchangeRateNotConfigured);
         }
     }
 }

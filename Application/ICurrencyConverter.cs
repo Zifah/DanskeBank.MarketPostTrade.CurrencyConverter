@@ -1,6 +1,6 @@
 ﻿namespace Application;
 
-internal interface ICurrencyConverter
+public interface ICurrencyConverter
 {
     /// <summary>
     /// Converts the <paramref name="amount"/> from the MainCurrency to the MoneyCurrency

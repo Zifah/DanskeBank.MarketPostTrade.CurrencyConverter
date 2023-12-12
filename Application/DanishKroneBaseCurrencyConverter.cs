@@ -1,9 +1,4 @@
 ﻿using Domain;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application;
 
@@ -24,15 +19,7 @@ public class DanishKroneBaseCurrencyConverter : ICurrencyConverter
 
     public DanishKroneBaseCurrencyConverter()
     {
-        var euro = new Currency(EuroISO, "Euro");
-        var usDollar = new Currency(USDollarISO, "Amerikanske dollar");
-        var britishPound = new Currency(BritishPoundISO, "Britiske pund");
-        var swedishKrona = new Currency(SwedishKronaISO, "Svenske kroner");
-        var norwegianKrone = new Currency(NorwegianKroneISO, "Norske kroner");
-        var swissFranc = new Currency(SwissFrancISO, "Schweiziske franc");
-        var japaneseYen = new Currency(JapaneseYenISO, "Japanske yen");
-        var danishKrone = new Currency(DanishKroneISO, "Danish Krone");
-
+        // TODO: Make the data injectable/configurable
         var euroToDKK = new ExchangeRate(EuroISO, DanishKroneISO, MainCurrencyVolume, 743.94m);
         var usDollarToDKK = new ExchangeRate(USDollarISO, DanishKroneISO, MainCurrencyVolume, 663.11m);
         var britishPoundToDKK = new ExchangeRate(BritishPoundISO, DanishKroneISO, MainCurrencyVolume, 852.85m);
@@ -40,8 +27,6 @@ public class DanishKroneBaseCurrencyConverter : ICurrencyConverter
         var norwegianKroneToDKK = new ExchangeRate(NorwegianKroneISO, DanishKroneISO, MainCurrencyVolume, 78.40m);
         var swissFrancToDKK = new ExchangeRate(SwissFrancISO, DanishKroneISO, MainCurrencyVolume, 683.58m);
         var japaneseYenToDKK = new ExchangeRate(JapaneseYenISO, DanishKroneISO, MainCurrencyVolume, 5.9740m);
-
-        var dkkToDkk = new ExchangeRate(DanishKroneISO, DanishKroneISO, MainCurrencyVolume, MainCurrencyVolume);
 
         _exchangeRates = new Dictionary<string, ExchangeRate>
         {
@@ -51,8 +36,7 @@ public class DanishKroneBaseCurrencyConverter : ICurrencyConverter
             { $"{SwedishKronaISO}/{DanishKroneISO}", swedishKronaToDKK },
             { $"{NorwegianKroneISO}/{DanishKroneISO}", norwegianKroneToDKK },
             { $"{SwissFrancISO}/{DanishKroneISO}", swissFrancToDKK },
-            { $"{JapaneseYenISO}/{DanishKroneISO}", japaneseYenToDKK },
-            { $"{DanishKroneISO}/{DanishKroneISO}", dkkToDkk }
+            { $"{JapaneseYenISO}/{DanishKroneISO}", japaneseYenToDKK }
         };
     }
 
@@ -62,7 +46,6 @@ public class DanishKroneBaseCurrencyConverter : ICurrencyConverter
 
         if (currencyPair.AreSame())
         {
-            // TODO Hafiz: Write test case for this
             return amount;
         }
 
@@ -74,7 +57,7 @@ public class DanishKroneBaseCurrencyConverter : ICurrencyConverter
         }
 
         exchangeRate ??= TryGetExchangeRateViaDKKIntermediary(currencyPair)
-             ?? throw new ArgumentException($"No rates available for one or more of the currencies in the provided pair: {currencyPairInput}");
+             ?? throw new ArgumentException($"{ErrorMessages.ExchangeRateNotConfigured}: {currencyPairInput}");
 
         var exchangedAmount = amount * exchangeRate.MoneyCurrencyValue / exchangeRate.MainCurrencyVolume;
         return decimal.Round(exchangedAmount, DecimalPlaces);
