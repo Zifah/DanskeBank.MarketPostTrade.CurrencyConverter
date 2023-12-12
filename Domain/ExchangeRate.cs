@@ -1,8 +1,8 @@
 ﻿namespace Domain
 {
     public record ExchangeRate(
-        Currency MainCurrency,
-        Currency MoneyCurrency,
+        string MainCurrency,
+        string MoneyCurrency,
         int MainCurrencyVolume,
         decimal MoneyCurrencyValue)
     {

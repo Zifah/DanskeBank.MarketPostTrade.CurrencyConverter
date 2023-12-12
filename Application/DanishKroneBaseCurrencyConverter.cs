@@ -9,6 +9,8 @@ namespace Application;
 
 public class DanishKroneBaseCurrencyConverter : ICurrencyConverter
 {
+    private const int DecimalPlaces = 4;
+
     private const int MainCurrencyVolume = 100;
     private const string EuroISO = "EUR";
     private const string USDollarISO = "USD";
@@ -31,15 +33,15 @@ public class DanishKroneBaseCurrencyConverter : ICurrencyConverter
         var japaneseYen = new Currency(JapaneseYenISO, "Japanske yen");
         var danishKrone = new Currency(DanishKroneISO, "Danish Krone");
 
-        var euroToDKK = new ExchangeRate(euro, danishKrone, MainCurrencyVolume, 743.94m);
-        var usDollarToDKK = new ExchangeRate(usDollar, danishKrone, MainCurrencyVolume, 663.11m);
-        var britishPoundToDKK = new ExchangeRate(britishPound, danishKrone, MainCurrencyVolume, 852.85m);
-        var swedishKronaToDKK = new ExchangeRate(swedishKrona, danishKrone, MainCurrencyVolume, 76.10m);
-        var norwegianKroneToDKK = new ExchangeRate(norwegianKrone, danishKrone, MainCurrencyVolume, 78.40m);
-        var swissFrancToDKK = new ExchangeRate(swissFranc, danishKrone, MainCurrencyVolume, 683.58m);
-        var japaneseYenToDKK = new ExchangeRate(japaneseYen, danishKrone, MainCurrencyVolume, 5.9740m);
+        var euroToDKK = new ExchangeRate(EuroISO, DanishKroneISO, MainCurrencyVolume, 743.94m);
+        var usDollarToDKK = new ExchangeRate(USDollarISO, DanishKroneISO, MainCurrencyVolume, 663.11m);
+        var britishPoundToDKK = new ExchangeRate(BritishPoundISO, DanishKroneISO, MainCurrencyVolume, 852.85m);
+        var swedishKronaToDKK = new ExchangeRate(SwedishKronaISO, DanishKroneISO, MainCurrencyVolume, 76.10m);
+        var norwegianKroneToDKK = new ExchangeRate(NorwegianKroneISO, DanishKroneISO, MainCurrencyVolume, 78.40m);
+        var swissFrancToDKK = new ExchangeRate(SwissFrancISO, DanishKroneISO, MainCurrencyVolume, 683.58m);
+        var japaneseYenToDKK = new ExchangeRate(JapaneseYenISO, DanishKroneISO, MainCurrencyVolume, 5.9740m);
 
-        var dkkToDkk = new ExchangeRate(danishKrone, danishKrone, MainCurrencyVolume, MainCurrencyVolume);
+        var dkkToDkk = new ExchangeRate(DanishKroneISO, DanishKroneISO, MainCurrencyVolume, MainCurrencyVolume);
 
         _exchangeRates = new Dictionary<string, ExchangeRate>
         {
@@ -54,9 +56,39 @@ public class DanishKroneBaseCurrencyConverter : ICurrencyConverter
         };
     }
 
-    public decimal Convert(string currencyPair, decimal amount)
+    public decimal Convert(string currencyPairInput, decimal amount)
     {
-        var exchangeRate = _exchangeRates[currencyPair.ToUpperInvariant()];
-        return amount * exchangeRate.MoneyCurrencyValue / exchangeRate.MainCurrencyVolume;
+        var forwardCurrencyPair = CurrencyPair.Build(currencyPairInput);
+        _exchangeRates.TryGetValue(forwardCurrencyPair.ToString(), out var exchangeRate);
+
+        if (exchangeRate == null && forwardCurrencyPair.MainCurrency == DanishKroneISO)
+        {
+            exchangeRate = GetReverseExchangeRate(forwardCurrencyPair);
+        }
+
+        if (exchangeRate == null)
+        {
+            throw new ArgumentException($"No rates available for one or more of the currencies in the provided pair: {currencyPairInput}");
+        }
+
+        var exchangedAmount = amount * exchangeRate.MoneyCurrencyValue / exchangeRate.MainCurrencyVolume;
+        return Decimal.Round(exchangedAmount, DecimalPlaces);
+    }
+
+    private ExchangeRate? GetReverseExchangeRate(CurrencyPair forwardCurrencyPair)
+    {
+        var reverseCurrencyPair = new CurrencyPair(forwardCurrencyPair.MoneyCurrency, forwardCurrencyPair.MainCurrency);
+        _exchangeRates.TryGetValue(reverseCurrencyPair.ToString(), out var reverseExchangeRate);
+
+        if (reverseExchangeRate == null)
+        {
+            return null;
+        }
+
+        return new ExchangeRate(
+                reverseCurrencyPair.MainCurrency,
+                reverseCurrencyPair.MoneyCurrency,
+                1,
+                reverseExchangeRate.MainCurrencyVolume / reverseExchangeRate.MoneyCurrencyValue);
     }
 }
