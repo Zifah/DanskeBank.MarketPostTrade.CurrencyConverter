@@ -58,37 +58,62 @@ public class DanishKroneBaseCurrencyConverter : ICurrencyConverter
 
     public decimal Convert(string currencyPairInput, decimal amount)
     {
-        var forwardCurrencyPair = CurrencyPair.Build(currencyPairInput);
-        _exchangeRates.TryGetValue(forwardCurrencyPair.ToString(), out var exchangeRate);
+        var currencyPair = CurrencyPair.Build(currencyPairInput);
 
-        if (exchangeRate == null && forwardCurrencyPair.MainCurrency == DanishKroneISO)
+        if (currencyPair.AreSame())
         {
-            exchangeRate = GetReverseExchangeRate(forwardCurrencyPair);
+            // TODO Hafiz: Write test case for this
+            return amount;
         }
 
-        if (exchangeRate == null)
+        _exchangeRates.TryGetValue(currencyPair.ToString(), out var exchangeRate);
+
+        if (exchangeRate == null && currencyPair.MainCurrency == DanishKroneISO)
         {
-            throw new ArgumentException($"No rates available for one or more of the currencies in the provided pair: {currencyPairInput}");
+            exchangeRate = TryGetDKKToOtherCurrencyRate(currencyPair.MoneyCurrency);
         }
+
+        exchangeRate ??= TryGetExchangeRateViaDKKIntermediary(currencyPair)
+             ?? throw new ArgumentException($"No rates available for one or more of the currencies in the provided pair: {currencyPairInput}");
 
         var exchangedAmount = amount * exchangeRate.MoneyCurrencyValue / exchangeRate.MainCurrencyVolume;
-        return Decimal.Round(exchangedAmount, DecimalPlaces);
+        return decimal.Round(exchangedAmount, DecimalPlaces);
     }
 
-    private ExchangeRate? GetReverseExchangeRate(CurrencyPair forwardCurrencyPair)
+    /// <summary>
+    /// Computes the DKK -> OtherCurrency rate from a rate in the other direction (if it exists)
+    /// </summary>
+    /// <param name="forwardCurrencyPair"></param>
+    /// <returns>Returns the result of the computation if the other currency converts to DKK; null otherwise</returns>
+    private ExchangeRate? TryGetDKKToOtherCurrencyRate(string otherCurrencyRate)
     {
-        var reverseCurrencyPair = new CurrencyPair(forwardCurrencyPair.MoneyCurrency, forwardCurrencyPair.MainCurrency);
-        _exchangeRates.TryGetValue(reverseCurrencyPair.ToString(), out var reverseExchangeRate);
+        _exchangeRates.TryGetValue(new CurrencyPair(otherCurrencyRate, DanishKroneISO).ToString(),
+            out var moneyToDkkExchangeRate);
+        return moneyToDkkExchangeRate?.Invert();
+    }
 
-        if (reverseExchangeRate == null)
+    private ExchangeRate? TryGetExchangeRateViaDKKIntermediary(CurrencyPair currencyPair)
+    {
+        var mainToDkkCurrencyPair = new CurrencyPair(currencyPair.MainCurrency, DanishKroneISO);
+        _exchangeRates.TryGetValue(mainToDkkCurrencyPair.ToString(), out var mainToDkkExchangeRate);
+
+        if (mainToDkkExchangeRate == null)
         {
             return null;
         }
 
+        var dkkToMoneyExchangeRate = TryGetDKKToOtherCurrencyRate(currencyPair.MoneyCurrency);
+
+        if (dkkToMoneyExchangeRate == null)
+        {
+            return null;
+        }
+
+        var mainToMoneyRate = mainToDkkExchangeRate.GetSingleUnitRate() * dkkToMoneyExchangeRate.GetSingleUnitRate();
         return new ExchangeRate(
-                reverseCurrencyPair.MainCurrency,
-                reverseCurrencyPair.MoneyCurrency,
-                1,
-                reverseExchangeRate.MainCurrencyVolume / reverseExchangeRate.MoneyCurrencyValue);
+            currencyPair.MainCurrency,
+            currencyPair.MoneyCurrency,
+            1,
+            mainToMoneyRate);
     }
 }

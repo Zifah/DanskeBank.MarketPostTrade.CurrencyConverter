@@ -6,8 +6,17 @@ using System.Threading.Tasks;
 
 namespace Domain
 {
-    public record CurrencyPair(string MainCurrency, string MoneyCurrency)
+    public record CurrencyPair
     {
+        public string MainCurrency { get; }
+        public string MoneyCurrency { get; }
+
+        public CurrencyPair(string mainCurrency, string moneyCurrency)
+        {
+            MainCurrency = mainCurrency.ToUpper();
+            MoneyCurrency = moneyCurrency.ToUpper();
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -15,7 +24,7 @@ namespace Domain
         /// <returns></returns>
         public static CurrencyPair Build(string currencyPair)
         {
-            var currencies = currencyPair.ToUpper().Split('/');
+            var currencies = currencyPair.Split('/');
 
             if (currencies.Length != 2)
             {
@@ -27,6 +36,16 @@ namespace Domain
         public override string ToString()
         {
             return $"{MainCurrency}/{MoneyCurrency}";
+        }
+
+        public string ReverseToString()
+        {
+            return $"{MoneyCurrency}/{MainCurrency}";
+        }
+
+        public bool AreSame()
+        {
+            return MainCurrency.Equals(MoneyCurrency);
         }
     }
 }
