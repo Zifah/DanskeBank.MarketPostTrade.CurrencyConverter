@@ -11,6 +11,23 @@ namespace Application.UnitTests
     public class DanishKroneBaseCurrencyConverterTests
     {
         private DanishKroneBaseCurrencyConverter _theConverter;
+
+        private const int DecimalPlaces = 4;
+        private const int MainCurrencyVolume = 100;
+
+        // Ideally would be auto-generated but I don't have more time.
+        private static readonly Dictionary<string, decimal> _ratesMainToDKK = new()
+        {
+            { CurrencyISOCodes.EuroISO, 743.94m/MainCurrencyVolume },
+            { CurrencyISOCodes.UsDollarISO, 663.11m/MainCurrencyVolume },
+            { CurrencyISOCodes.BritishPoundISO, 852.85m / MainCurrencyVolume },
+            { CurrencyISOCodes.SwedishKronaISO, 76.10m / MainCurrencyVolume },
+            { CurrencyISOCodes.NorwegianKroneISO, 78.40m / MainCurrencyVolume },
+            { CurrencyISOCodes.SwissFrancISO,683.58m / MainCurrencyVolume },
+            { CurrencyISOCodes.JapaneseYenISO, 5.9740m / MainCurrencyVolume }
+        };
+
+
         private static Fixture AutoFixture
         {
             get
@@ -26,34 +43,9 @@ namespace Application.UnitTests
             }
         }
 
-        private const int DecimalPlaces = 4;
-        private const int MainCurrencyVolume = 100;
-        private const string
-            EuroISO = "EUR",
-            UsDollarISO = "USD",
-            BritishPoundISO = "GBP",
-            SwedishKronaISO = "SEK",
-            NorwegianKroneISO = "NOK",
-            SwissFrancISO = "CHF",
-            JapaneseYenISO = "JPY",
-            DanishKroneISO = "DKK";
-
-        // TODO: Pass the rates to the converter instead of duplicating the data between test and implementation
-        private static Dictionary<string, decimal> _rates100UnitsMainToDKK = new Dictionary<string, decimal>()
-        {
-            { EuroISO, 743.94m },
-            { UsDollarISO, 663.11m },
-            { BritishPoundISO, 852.85m },
-            { SwedishKronaISO, 76.10m },
-            { NorwegianKroneISO, 78.40m },
-            { SwissFrancISO,683.58m },
-            { JapaneseYenISO, 5.9740m },
-            { DanishKroneISO, MainCurrencyVolume }
-        };
-
         public DanishKroneBaseCurrencyConverterTests()
         {
-            _theConverter = new DanishKroneBaseCurrencyConverter();
+            _theConverter = new DanishKroneBaseCurrencyConverter(_ratesMainToDKK);
         }
 
         [Theory]
@@ -87,20 +79,19 @@ namespace Application.UnitTests
         }
 
         [Theory]
-        [InlineData(EuroISO)]
-        [InlineData(UsDollarISO)]
-        [InlineData(BritishPoundISO)]
-        [InlineData(SwedishKronaISO)]
-        [InlineData(NorwegianKroneISO)]
-        [InlineData(SwissFrancISO)]
-        [InlineData(JapaneseYenISO)]
+        [InlineData(CurrencyISOCodes.EuroISO)]
+        [InlineData(CurrencyISOCodes.UsDollarISO)]
+        [InlineData(CurrencyISOCodes.BritishPoundISO)]
+        [InlineData(CurrencyISOCodes.SwedishKronaISO)]
+        [InlineData(CurrencyISOCodes.NorwegianKroneISO)]
+        [InlineData(CurrencyISOCodes.SwissFrancISO)]
+        [InlineData(CurrencyISOCodes.JapaneseYenISO)]
         public void Convert_WhenAnyConfiguredCurrencyToDKK_ReturnsExpectedAmount(string mainCurrency)
         {
             // Arrange
             var mainAmount = AutoFixture.Create<decimal>();
-            var currencyPair = $"{mainCurrency}/{DanishKroneISO}";
-            var expectedExchangeAmount = decimal.Round(
-                mainAmount * _rates100UnitsMainToDKK[mainCurrency] / MainCurrencyVolume, DecimalPlaces);
+            var currencyPair = $"{mainCurrency}/{CurrencyISOCodes.DanishKroneISO}";
+            var expectedExchangeAmount = decimal.Round(mainAmount * _ratesMainToDKK[mainCurrency], DecimalPlaces);
 
             // Act
             var exchangedAmount = _theConverter.Convert(currencyPair, mainAmount);
@@ -110,20 +101,19 @@ namespace Application.UnitTests
         }
 
         [Theory]
-        [InlineData(EuroISO)]
-        [InlineData(UsDollarISO)]
-        [InlineData(BritishPoundISO)]
-        [InlineData(SwedishKronaISO)]
-        [InlineData(NorwegianKroneISO)]
-        [InlineData(SwissFrancISO)]
-        [InlineData(JapaneseYenISO)]
+        [InlineData(CurrencyISOCodes.EuroISO)]
+        [InlineData(CurrencyISOCodes.UsDollarISO)]
+        [InlineData(CurrencyISOCodes.BritishPoundISO)]
+        [InlineData(CurrencyISOCodes.SwedishKronaISO)]
+        [InlineData(CurrencyISOCodes.NorwegianKroneISO)]
+        [InlineData(CurrencyISOCodes.SwissFrancISO)]
+        [InlineData(CurrencyISOCodes.JapaneseYenISO)]
         public void Convert_WhenDKKToAnyConfiguredCurrency_ReturnsExpectedAmount(string moneyCurrency)
         {
             // Arrange
             var mainDkkAmount = AutoFixture.Create<decimal>();
-            var currencyPair = new CurrencyPair(DanishKroneISO, moneyCurrency).ToString();
-            var expectedExchangeAmount = decimal.Round(
-                mainDkkAmount * MainCurrencyVolume / _rates100UnitsMainToDKK[moneyCurrency], DecimalPlaces);
+            var currencyPair = new CurrencyPair(CurrencyISOCodes.DanishKroneISO, moneyCurrency).ToString();
+            var expectedExchangeAmount = decimal.Round(mainDkkAmount / _ratesMainToDKK[moneyCurrency], DecimalPlaces);
 
             // Act
             var exchangedAmount = _theConverter.Convert(currencyPair, mainDkkAmount);
@@ -136,13 +126,13 @@ namespace Application.UnitTests
         {
             var nonDkkCurrencies = new List<string>
             {
-                EuroISO,
-                UsDollarISO,
-                BritishPoundISO,
-                SwedishKronaISO,
-                NorwegianKroneISO,
-                SwissFrancISO,
-                JapaneseYenISO
+                CurrencyISOCodes.EuroISO,
+                CurrencyISOCodes.UsDollarISO,
+                CurrencyISOCodes.BritishPoundISO,
+                CurrencyISOCodes.SwedishKronaISO,
+                CurrencyISOCodes.NorwegianKroneISO,
+                CurrencyISOCodes.SwissFrancISO,
+                CurrencyISOCodes.JapaneseYenISO
             };
 
             foreach (var mainCurrency in nonDkkCurrencies)
@@ -153,8 +143,8 @@ namespace Application.UnitTests
                     {
                         // Convert from Main to DKK, and then from DKK to Money currency
                         var inputAmount = AutoFixture.Create<decimal>();
-                        var mainToDKKRate = _rates100UnitsMainToDKK[mainCurrency] / MainCurrencyVolume;
-                        var dkkToMoneyRate = MainCurrencyVolume / _rates100UnitsMainToDKK[moneyCurrency];
+                        var mainToDKKRate = _ratesMainToDKK[mainCurrency];
+                        var dkkToMoneyRate = 1 / _ratesMainToDKK[moneyCurrency];
                         var expectedExchangedAmount =
                             decimal.Round(inputAmount * mainToDKKRate * dkkToMoneyRate, DecimalPlaces);
 
@@ -183,14 +173,14 @@ namespace Application.UnitTests
         }
 
         [Theory]
-        [InlineAutoData($"{EuroISO}/{EuroISO}")]
-        [InlineAutoData($"{DanishKroneISO}/{DanishKroneISO}")]
-        [InlineAutoData($"{SwedishKronaISO}/{SwedishKronaISO}")]
-        [InlineAutoData($"{SwissFrancISO}/{SwissFrancISO}")]
-        [InlineAutoData($"{NorwegianKroneISO}/{NorwegianKroneISO}")]
-        [InlineAutoData($"{JapaneseYenISO}/{JapaneseYenISO}")]
-        [InlineAutoData($"{UsDollarISO}/{UsDollarISO}")]
-        [InlineAutoData($"{BritishPoundISO}/{BritishPoundISO}")]
+        [InlineAutoData($"{CurrencyISOCodes.EuroISO}/{CurrencyISOCodes.EuroISO}")]
+        [InlineAutoData($"{CurrencyISOCodes.DanishKroneISO}/{CurrencyISOCodes.DanishKroneISO}")]
+        [InlineAutoData($"{CurrencyISOCodes.SwedishKronaISO}/{CurrencyISOCodes.SwedishKronaISO}")]
+        [InlineAutoData($"{CurrencyISOCodes.SwissFrancISO}/{CurrencyISOCodes.SwissFrancISO}")]
+        [InlineAutoData($"{CurrencyISOCodes.NorwegianKroneISO}/{CurrencyISOCodes.NorwegianKroneISO}")]
+        [InlineAutoData($"{CurrencyISOCodes.JapaneseYenISO}/{CurrencyISOCodes.JapaneseYenISO}")]
+        [InlineAutoData($"{CurrencyISOCodes.UsDollarISO}/{CurrencyISOCodes.UsDollarISO}")]
+        [InlineAutoData($"{CurrencyISOCodes.BritishPoundISO}/{CurrencyISOCodes.BritishPoundISO}")]
 
         public void Convert_WhenMainAndMoneyCurrencyAreSame_ReturnsInputAmount(string currencyPair, decimal originalAmount)
         {

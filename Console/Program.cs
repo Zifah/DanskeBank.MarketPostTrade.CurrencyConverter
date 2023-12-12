@@ -3,15 +3,26 @@ using Domain;
 
 const string ExitPrompt = "Press any key to exit.";
 
-string currencyPair;
-decimal amount;
 
-ICurrencyConverter converter = new DanishKroneBaseCurrencyConverter();
+
+const int MainCurrencyVolume = 100;
+Dictionary<string, decimal> ratesMainToDKK = new()
+        {
+            { CurrencyISOCodes.EuroISO, 743.94m/MainCurrencyVolume },
+            { CurrencyISOCodes.UsDollarISO, 663.11m/MainCurrencyVolume },
+            { CurrencyISOCodes.BritishPoundISO, 852.85m / MainCurrencyVolume },
+            { CurrencyISOCodes.SwedishKronaISO, 76.10m / MainCurrencyVolume },
+            { CurrencyISOCodes.NorwegianKroneISO, 78.40m / MainCurrencyVolume },
+            { CurrencyISOCodes.SwissFrancISO,683.58m / MainCurrencyVolume },
+            { CurrencyISOCodes.JapaneseYenISO, 5.9740m / MainCurrencyVolume }
+        };
+
+ICurrencyConverter converter = new DanishKroneBaseCurrencyConverter(ratesMainToDKK);
 
 var command = Start();
 try
 {
-    (currencyPair, amount) = ParseInput();
+    (var currencyPair, var amount) = ParseInput();
     var convertedValue = converter.Convert(currencyPair, amount);
     var currencyPairHolder = CurrencyPair.Build(currencyPair);
     Console.WriteLine($"RESULT: {amount} {currencyPairHolder.MainCurrency} = {convertedValue} {currencyPairHolder.MoneyCurrency}");

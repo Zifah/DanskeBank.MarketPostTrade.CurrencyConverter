@@ -7,8 +7,8 @@
 
         public CurrencyPair(string mainCurrency, string moneyCurrency)
         {
-            MainCurrency = mainCurrency.ToUpper();
-            MoneyCurrency = moneyCurrency.ToUpper();
+            MainCurrency = mainCurrency.Trim().ToUpper();
+            MoneyCurrency = moneyCurrency.Trim().ToUpper();
         }
 
         /// <summary>

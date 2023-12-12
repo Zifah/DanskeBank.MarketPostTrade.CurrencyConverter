@@ -5,39 +5,20 @@ namespace Application;
 public class DanishKroneBaseCurrencyConverter : ICurrencyConverter
 {
     private const int DecimalPlaces = 4;
-
-    private const int MainCurrencyVolume = 100;
-    private const string EuroISO = "EUR";
-    private const string USDollarISO = "USD";
-    private const string BritishPoundISO = "GBP";
-    private const string SwedishKronaISO = "SEK";
-    private const string NorwegianKroneISO = "NOK";
-    private const string SwissFrancISO = "CHF";
-    private const string JapaneseYenISO = "JPY";
-    private const string DanishKroneISO = "DKK";
     private readonly Dictionary<string, ExchangeRate> _exchangeRates;
 
-    public DanishKroneBaseCurrencyConverter()
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="exchangeRates">
+    /// <para>Key: The ISOCode of the main currency.</para>
+    /// <para>Value: The amount of DKK that 1 unit of the main currency fetches.</para>
+    /// </param>
+    public DanishKroneBaseCurrencyConverter(IDictionary<string, decimal> exchangeRates)
     {
-        // TODO: Make the data injectable/configurable
-        var euroToDKK = new ExchangeRate(EuroISO, DanishKroneISO, MainCurrencyVolume, 743.94m);
-        var usDollarToDKK = new ExchangeRate(USDollarISO, DanishKroneISO, MainCurrencyVolume, 663.11m);
-        var britishPoundToDKK = new ExchangeRate(BritishPoundISO, DanishKroneISO, MainCurrencyVolume, 852.85m);
-        var swedishKronaToDKK = new ExchangeRate(SwedishKronaISO, DanishKroneISO, MainCurrencyVolume, 76.10m);
-        var norwegianKroneToDKK = new ExchangeRate(NorwegianKroneISO, DanishKroneISO, MainCurrencyVolume, 78.40m);
-        var swissFrancToDKK = new ExchangeRate(SwissFrancISO, DanishKroneISO, MainCurrencyVolume, 683.58m);
-        var japaneseYenToDKK = new ExchangeRate(JapaneseYenISO, DanishKroneISO, MainCurrencyVolume, 5.9740m);
-
-        _exchangeRates = new Dictionary<string, ExchangeRate>
-        {
-            { $"{EuroISO}/{DanishKroneISO}", euroToDKK },
-            { $"{USDollarISO}/{DanishKroneISO}", usDollarToDKK },
-            { $"{BritishPoundISO}/{DanishKroneISO}", britishPoundToDKK },
-            { $"{SwedishKronaISO}/{DanishKroneISO}", swedishKronaToDKK },
-            { $"{NorwegianKroneISO}/{DanishKroneISO}", norwegianKroneToDKK },
-            { $"{SwissFrancISO}/{DanishKroneISO}", swissFrancToDKK },
-            { $"{JapaneseYenISO}/{DanishKroneISO}", japaneseYenToDKK }
-        };
+        _exchangeRates = exchangeRates.ToDictionary(
+            kvp => new CurrencyPair(kvp.Key, CurrencyISOCodes.DanishKroneISO).ToString(), 
+            kvp => new ExchangeRate(kvp.Key, CurrencyISOCodes.DanishKroneISO, 1, kvp.Value));
     }
 
     public decimal Convert(string currencyPairInput, decimal amount)
@@ -51,7 +32,7 @@ public class DanishKroneBaseCurrencyConverter : ICurrencyConverter
 
         _exchangeRates.TryGetValue(currencyPair.ToString(), out var exchangeRate);
 
-        if (exchangeRate == null && currencyPair.MainCurrency == DanishKroneISO)
+        if (exchangeRate == null && currencyPair.MainCurrency == CurrencyISOCodes.DanishKroneISO)
         {
             exchangeRate = TryGetDKKToOtherCurrencyRate(currencyPair.MoneyCurrency);
         }
@@ -70,14 +51,14 @@ public class DanishKroneBaseCurrencyConverter : ICurrencyConverter
     /// <returns>Returns the result of the computation if the other currency converts to DKK; null otherwise</returns>
     private ExchangeRate? TryGetDKKToOtherCurrencyRate(string otherCurrencyRate)
     {
-        _exchangeRates.TryGetValue(new CurrencyPair(otherCurrencyRate, DanishKroneISO).ToString(),
+        _exchangeRates.TryGetValue(new CurrencyPair(otherCurrencyRate, CurrencyISOCodes.DanishKroneISO).ToString(),
             out var moneyToDkkExchangeRate);
         return moneyToDkkExchangeRate?.Invert();
     }
 
     private ExchangeRate? TryGetExchangeRateViaDKKIntermediary(CurrencyPair currencyPair)
     {
-        var mainToDkkCurrencyPair = new CurrencyPair(currencyPair.MainCurrency, DanishKroneISO);
+        var mainToDkkCurrencyPair = new CurrencyPair(currencyPair.MainCurrency, CurrencyISOCodes.DanishKroneISO);
         _exchangeRates.TryGetValue(mainToDkkCurrencyPair.ToString(), out var mainToDkkExchangeRate);
 
         if (mainToDkkExchangeRate == null)
