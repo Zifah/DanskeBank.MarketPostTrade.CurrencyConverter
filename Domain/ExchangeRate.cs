@@ -4,7 +4,7 @@
         Currency MainCurrency,
         Currency MoneyCurrency,
         int MainCurrencyVolume,
-        decimal MoneyCurrenyValue)
+        decimal MoneyCurrencyValue)
     {
     }
 }

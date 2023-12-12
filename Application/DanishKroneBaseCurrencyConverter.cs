@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Application;
 
-internal class DanishKroneBaseCurrencyConverter : ICurrencyConverter
+public class DanishKroneBaseCurrencyConverter : ICurrencyConverter
 {
     private const int MainCurrencyVolume = 100;
     private const string EuroISO = "EUR";
@@ -56,6 +56,7 @@ internal class DanishKroneBaseCurrencyConverter : ICurrencyConverter
 
     public decimal Convert(string currencyPair, decimal amount)
     {
-        throw new NotImplementedException();
+        var exchangeRate = _exchangeRates[currencyPair.ToUpperInvariant()];
+        return amount * exchangeRate.MoneyCurrencyValue / exchangeRate.MainCurrencyVolume;
     }
 }
