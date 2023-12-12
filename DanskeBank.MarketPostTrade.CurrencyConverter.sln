@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Console", "DanskeBank.MarketPostTrade.CurrencyConverter.Console\Console.csproj", "{A7533C3D-798B-43E5-B794-3B0C416F083C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application", "Application\Application.csproj", "{6F55A04E-3A17-4333-948C-74088887EE86}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{38B620E9-0E60-48F0-B22E-B17635C6D17C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csproj", "{38B620E9-0E60-48F0-B22E-B17635C6D17C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.UnitTests", "Application.UnitTests\Application.UnitTests.csproj", "{C2100DB8-6C7E-4BA5-AA05-E747891CFE7D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application.UnitTests", "Application.UnitTests\Application.UnitTests.csproj", "{C2100DB8-6C7E-4BA5-AA05-E747891CFE7D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain.UnitTests", "Domain.UnitTests\Domain.UnitTests.csproj", "{95D0BEC0-9F75-4651-9A0B-303E473D5A05}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain.UnitTests", "Domain.UnitTests\Domain.UnitTests.csproj", "{95D0BEC0-9F75-4651-9A0B-303E473D5A05}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Console", "Console\Console.csproj", "{51395040-4434-4336-8F67-55237AA1E3D0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,10 +19,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A7533C3D-798B-43E5-B794-3B0C416F083C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A7533C3D-798B-43E5-B794-3B0C416F083C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A7533C3D-798B-43E5-B794-3B0C416F083C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A7533C3D-798B-43E5-B794-3B0C416F083C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6F55A04E-3A17-4333-948C-74088887EE86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6F55A04E-3A17-4333-948C-74088887EE86}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6F55A04E-3A17-4333-948C-74088887EE86}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -39,6 +35,10 @@ Global
 		{95D0BEC0-9F75-4651-9A0B-303E473D5A05}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95D0BEC0-9F75-4651-9A0B-303E473D5A05}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95D0BEC0-9F75-4651-9A0B-303E473D5A05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51395040-4434-4336-8F67-55237AA1E3D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51395040-4434-4336-8F67-55237AA1E3D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51395040-4434-4336-8F67-55237AA1E3D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51395040-4434-4336-8F67-55237AA1E3D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
