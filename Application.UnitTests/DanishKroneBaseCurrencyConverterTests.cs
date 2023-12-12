@@ -1,5 +1,6 @@
 using AutoFixture;
 using AutoFixture.Xunit2;
+using Domain;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -10,8 +11,22 @@ namespace Application.UnitTests
     public class DanishKroneBaseCurrencyConverterTests
     {
         private DanishKroneBaseCurrencyConverter _theConverter;
-        private readonly Fixture _fixture;
+        private static Fixture AutoFixture
+        {
+            get
+            {
+                var fixture = new Fixture();
+                fixture.Customize<decimal>(c => c.FromFactory(() =>
+                {
+                    var random = new Random();
+                    var value = Math.Round((decimal)random.NextDouble() * 100, 2);
+                    return value;
+                }));
+                return fixture;
+            }
+        }
         private const int DecimalPlaces = 4;
+        private const int MainCurrencyVolume = 100;
         private const string
             EuroISO = "EUR",
             UsDollarISO = "USD",
@@ -30,41 +45,13 @@ namespace Application.UnitTests
             { NorwegianKroneISO, 78.40m },
             { SwissFrancISO,683.58m },
             { JapaneseYenISO, 5.9740m },
-            { DanishKroneISO, 100m },
+            { DanishKroneISO, MainCurrencyVolume },
 
         };
 
         public DanishKroneBaseCurrencyConverterTests()
         {
             _theConverter = new DanishKroneBaseCurrencyConverter();
-            _fixture = new Fixture();
-            _fixture.Customize<decimal>(c => c.FromFactory(() =>
-            {
-                var random = new Random();
-                var value = Math.Round((decimal)random.NextDouble() * 100, 2);
-                return value;
-            }));
-        }
-
-        private IEnumerable<object[]> GetCurrencyConversionTestData()
-        {
-            var currencies = new List<string> { EuroISO, UsDollarISO, BritishPoundISO, SwedishKronaISO, NorwegianKroneISO, SwissFrancISO, JapaneseYenISO };
-
-            foreach (var sourceCurrency in currencies)
-            {
-                foreach (var destinationCurrency in currencies)
-                {
-                    if (sourceCurrency != destinationCurrency && destinationCurrency != DanishKroneISO)
-                    {
-                        var inputValue = _fixture.Create<decimal>(); // Generate random input value
-                        var sourceToDKKRate = _rates100UnitsMainToDKK[sourceCurrency];
-                        var DKKToDestinationRate = _rates100UnitsMainToDKK[destinationCurrency];
-                        var expectedExchangedValue = inputValue * (sourceToDKKRate / DKKToDestinationRate);
-
-                        yield return new object[] { sourceCurrency, destinationCurrency, inputValue, expectedExchangedValue };
-                    }
-                }
-            }
         }
 
         [Theory]
@@ -87,7 +74,7 @@ namespace Application.UnitTests
         public void Convert_AllowsUppercaseOrLowerCase(string currencyPair)
         {
             // Arrange
-            var mainAmount = _fixture.Create<decimal>();
+            var mainAmount = AutoFixture.Create<decimal>();
 
             // Act
             var action = () => _theConverter.Convert(currencyPair, mainAmount);
@@ -108,10 +95,10 @@ namespace Application.UnitTests
         public void Convert_WhenAnyConfiguredCurrencyToDKK_ReturnsExpectedAmount(string mainCurrency)
         {
             // Arrange
-            var mainAmount = _fixture.Create<decimal>();
+            var mainAmount = AutoFixture.Create<decimal>();
             var currencyPair = $"{mainCurrency}/{DanishKroneISO}";
             var expectedExchangeAmount = decimal.Round(
-                mainAmount * _rates100UnitsMainToDKK[mainCurrency] / 100, DecimalPlaces);
+                mainAmount * _rates100UnitsMainToDKK[mainCurrency] / MainCurrencyVolume, DecimalPlaces);
 
             // Act
             var exchangedAmount = _theConverter.Convert(currencyPair, mainAmount);
@@ -131,10 +118,10 @@ namespace Application.UnitTests
         public void Convert_WhenDKKToAnyConfiguredCurrency_ReturnsExpectedAmount(string moneyCurrency)
         {
             // Arrange
-            var mainDkkAmount = _fixture.Create<decimal>();
-            var currencyPair = $"{DanishKroneISO}/{moneyCurrency}";
+            var mainDkkAmount = AutoFixture.Create<decimal>();
+            var currencyPair = new CurrencyPair(DanishKroneISO, moneyCurrency).ToString();
             var expectedExchangeAmount = decimal.Round(
-                mainDkkAmount * 100 / _rates100UnitsMainToDKK[moneyCurrency], DecimalPlaces);
+                mainDkkAmount * MainCurrencyVolume / _rates100UnitsMainToDKK[moneyCurrency], DecimalPlaces);
 
             // Act
             var exchangedAmount = _theConverter.Convert(currencyPair, mainDkkAmount);
@@ -143,17 +130,66 @@ namespace Application.UnitTests
             exchangedAmount.ShouldBe(expectedExchangeAmount, DecimalPlaces);
         }
 
-        [Theory]
-        [AutoData]
-        public void Convert_WhenInvalidCurrencyPair_ThrowsInformativeException(string currencyPair)
+        private static IEnumerable<object[]> GetCurrencyConversionTestData()
         {
-            _ = currencyPair;
+            var currencies = new List<string>
+            {
+                EuroISO,
+                UsDollarISO,
+                BritishPoundISO,
+                SwedishKronaISO,
+                NorwegianKroneISO,
+                SwissFrancISO,
+                JapaneseYenISO
+            };
+
+            foreach (var mainCurrency in currencies)
+            {
+                foreach (var moneyCurrency in currencies)
+                {
+                    if (mainCurrency != moneyCurrency)
+                    {
+                        // Convert from Main to DKK, and then from DKK to Money currency
+                        var inputAmount = AutoFixture.Create<decimal>();
+                        var mainToDKKRate = _rates100UnitsMainToDKK[mainCurrency] / MainCurrencyVolume;
+                        var dkkToMoneyRate = MainCurrencyVolume / _rates100UnitsMainToDKK[moneyCurrency];
+                        var expectedExchangedAmount =
+                            decimal.Round(inputAmount * mainToDKKRate * dkkToMoneyRate, DecimalPlaces);
+
+                        yield return new object[] { mainCurrency, moneyCurrency, inputAmount, expectedExchangedAmount };
+                    }
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(GetCurrencyConversionTestData))]
+        public void Convert_WhenBothCurrenciesConfiguredToDKK_ConvertsCorrectlyBetweenEachOther(
+            string mainCurrency,
+            string moneyCurrency,
+            decimal inputAmount,
+            decimal expectedExchangedAmount
+            )
+        {
+            // Act
+            var exchangedAmount = _theConverter.Convert(new CurrencyPair(mainCurrency, moneyCurrency).ToString(),
+                inputAmount
+                );
+
+            // Assert
+            exchangedAmount.ShouldBe(expectedExchangedAmount);
         }
 
         [Fact]
-        public void Convert_WhenBothCurrenciesConfigured_ConvertCorrectlyBetweenEachOther()
+        public void Convert_WhenMainAndMoneyCurrencyAreSame_ReturnsInputAmount()
         {
 
+        }
+
+
+        [Fact]
+        public void Convert_WhenInvalidCurrencyPair_ThrowsInformativeException()
+        {
         }
     }
 }

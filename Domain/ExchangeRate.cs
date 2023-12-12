@@ -6,5 +6,9 @@
         int MainCurrencyVolume,
         decimal MoneyCurrencyValue)
     {
+        public ExchangeRate Invert()
+        {
+            return new ExchangeRate(MoneyCurrency, MainCurrency, 1, MainCurrencyVolume / MoneyCurrencyValue);
+        }
     }
 }
