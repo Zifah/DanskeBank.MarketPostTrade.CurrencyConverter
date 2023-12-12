@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain
+﻿namespace Domain
 {
-    public record Currency
+    public record Currency(string  ISOCode, string Name)
     {
-        public string ISOCode { get; set; }
-        public string Name { get; set; }
     }
 }
