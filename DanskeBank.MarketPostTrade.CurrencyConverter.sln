@@ -5,7 +5,9 @@ VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Console", "DanskeBank.MarketPostTrade.CurrencyConverter.Console\Console.csproj", "{A7533C3D-798B-43E5-B794-3B0C416F083C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "Application\Application.csproj", "{6F55A04E-3A17-4333-948C-74088887EE86}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application", "Application\Application.csproj", "{6F55A04E-3A17-4333-948C-74088887EE86}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.UnitTest", "Application.UnitTest\Application.UnitTest.csproj", "{44E85EA5-C68A-4A7D-B09A-3A6587ADEE24}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{6F55A04E-3A17-4333-948C-74088887EE86}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6F55A04E-3A17-4333-948C-74088887EE86}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F55A04E-3A17-4333-948C-74088887EE86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44E85EA5-C68A-4A7D-B09A-3A6587ADEE24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44E85EA5-C68A-4A7D-B09A-3A6587ADEE24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44E85EA5-C68A-4A7D-B09A-3A6587ADEE24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44E85EA5-C68A-4A7D-B09A-3A6587ADEE24}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
