@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain
+﻿namespace Domain
 {
     public record CurrencyPair
     {
@@ -33,14 +27,10 @@ namespace Domain
 
             return new CurrencyPair(currencies[0], currencies[1]);
         }
+
         public override string ToString()
         {
             return $"{MainCurrency}/{MoneyCurrency}";
-        }
-
-        public string ReverseToString()
-        {
-            return $"{MoneyCurrency}/{MainCurrency}";
         }
 
         public bool AreSame()
