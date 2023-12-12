@@ -3,6 +3,7 @@ using Domain;
 
 Console.WriteLine("Usage: <currency pair> <amount to exchange>");
 Console.WriteLine("Example: EUR/DKK 25.50");
+const string ExitPrompt = "Press any key to exit.";
 var command = Console.ReadLine();
 
 string currencyPair;
@@ -15,6 +16,7 @@ try
 catch (Exception ex)
 {
     Console.WriteLine(ex.Message);
+    Finish();
     return;
 }
 
@@ -34,6 +36,8 @@ catch (Exception)
     // TODO: Log exception
     Console.WriteLine("Sorry. A problem we did not foresee has happened. We will get right back to you with more information.");
 }
+
+Finish();
 
 (string currencyPair, decimal amount) ParseInput()
 {
@@ -55,4 +59,10 @@ catch (Exception)
     }
 
     return (currencyPair, amount);
+}
+
+static void Finish()
+{
+    Console.WriteLine(ExitPrompt);
+    Console.Read();
 }
